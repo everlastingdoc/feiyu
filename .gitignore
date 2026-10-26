@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.cache/
+.runtime/
+.feiyu/
+.env
+.env.*
+!.env.example
+config.local.json
+*.db
+*.db-shm
+*.db-wal
+*.sqlite*
+*.tgz
+backups/
+*.log
+coverage/

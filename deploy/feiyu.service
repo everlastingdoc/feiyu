@@ -1,0 +1,37 @@
+[Unit]
+Description=Feiyu personal assistant (DeepSeek Harness)
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=feiyu
+Group=feiyu
+Slice=feiyu.slice
+WorkingDirectory=/opt/feiyu/current
+EnvironmentFile=/etc/feiyu/assistant.env
+Environment=FEIYU_CONFIG=/etc/feiyu/config.json
+Environment=FEIYU_DATA_DIR=/var/lib/feiyu
+Environment=FEIYU_ENV_FILE=/etc/feiyu/assistant.env
+Environment=NODE_OPTIONS=--max-old-space-size=192
+Environment=TZ=Asia/Shanghai
+ExecStart=/opt/feiyu/node/bin/node /opt/feiyu/current/bin/feiyu.mjs start
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=210
+KillMode=control-group
+UMask=0077
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/feiyu
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=feiyu
+
+[Install]
+WantedBy=multi-user.target

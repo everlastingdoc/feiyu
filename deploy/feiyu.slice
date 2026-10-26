@@ -1,0 +1,8 @@
+[Unit]
+Description=Feiyu assistant and QQ login component combined budget
+
+[Slice]
+MemoryAccounting=yes
+MemoryHigh=700M
+MemoryMax=750M
+MemorySwapMax=0

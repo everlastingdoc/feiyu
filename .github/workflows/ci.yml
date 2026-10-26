@@ -1,0 +1,25 @@
+name: Build and test
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-22.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm test
+      - name: Validate deployment scripts
+        if: runner.os == 'Linux'
+        run: |
+          for script in scripts/*.sh; do bash -n "$script"; done
+          sudo systemd-analyze verify deploy/feiyu.slice deploy/feiyu.service deploy/feiyu-napcat.service 2>&1 | tee /tmp/feiyu-unit-check.txt || true
+          if grep -Ei 'unknown lvalue|unknown section|failed to parse|invalid argument' /tmp/feiyu-unit-check.txt; then exit 1; fi

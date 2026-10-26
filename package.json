@@ -1,0 +1,35 @@
+{
+  "name": "feiyu-assistant",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Personal assistant on official DeepSeek Harness with persistent memory and QQ notifications",
+  "type": "module",
+  "engines": { "node": "24.19.0" },
+  "bin": { "feiyu": "bin/feiyu.mjs" },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test dist/test/*.test.js",
+    "start": "node bin/feiyu.mjs start",
+    "doctor": "node bin/feiyu.mjs doctor",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "smoke:harness": "npm run build && node --test dist/test/harness.integration.test.js"
+  },
+  "dependencies": {
+    "@deepseek-ai/cordis": "4.0.5",
+    "@deepseek-ai/dsh": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-agent": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-app-boot": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-compaction": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-llm": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-session": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-session-persistence": "0.2.1-rc.2",
+    "@tencent-connect/qqbot-nodejs": "1.0.5",
+    "ws": "8.21.0",
+    "yaml": "2.8.1"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.0",
+    "@types/ws": "8.18.1",
+    "typescript": "5.9.3"
+  }
+}

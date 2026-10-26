@@ -1,0 +1,33 @@
+[Unit]
+Description=Feiyu QQ login (NapCat Shell v4.18.41)
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=feiyu
+Group=feiyu
+Slice=feiyu.slice
+WorkingDirectory=/var/lib/feiyu-napcat
+Environment=HOME=/var/lib/feiyu-napcat
+Environment=NAPCAT_BOOTMAIN=/var/lib/feiyu-napcat
+ExecStart=/usr/bin/xvfb-run -a /usr/bin/env LD_PRELOAD=/opt/feiyu/napcat/libnapcat_launcher.so /opt/QQ/qq --no-sandbox
+Restart=on-failure
+RestartSec=15
+TimeoutStopSec=45
+KillMode=control-group
+UMask=0077
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/feiyu-napcat
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+# QQ/NapCat may log login tokens and message contents. Inspect local files via SSH only.
+StandardOutput=null
+StandardError=null
+
+[Install]
+WantedBy=multi-user.target
