@@ -4,7 +4,7 @@
 
 固定 Node.js **24.19.0**、`@deepseek-ai/dsh` **0.2.1-rc.2**、腾讯 QQ SDK **1.0.5**。默认官方机器人通道；备用为同机 NapCat Shell **v4.18.41** + OneBot v11。无需在服务器运行本地模型，模型通过可配置的 Chat Completions 接口调用。
 
-**交付状态：源码及本地模拟验证已完成，真实上线待验收。** 没有填写任何真实凭据，也没有连接你的 QQ 或服务器。官方通道的主动消息权限、真实模型兼容性、10 分钟及 72 小时送达、Ubuntu 上包含 QQ 登录组件的资源占用，均需部署后验证。不能把 SDK 有发送方法或 HTTP 成功响应当作送达证明。
+**交付状态：已在 Ubuntu 实机部署，长期上线仍待验收。** 已验证真实模型、OneBot 小号登录、文字聊天、即时主动送达，以及等待期间重启飞鱼后的十分钟定时送达，均有用户接收确认。凭据只保存在服务器。QQ 完整重启后的快速登录态被拒绝，需重新扫码；72 小时可达性及持续资源验收仍待完成，详情见[验证记录](docs/verification.md)。不能把 SDK 有发送方法或 HTTP 成功响应当作送达证明。
 
 腾讯[官方发送消息文档](https://github.com/tencent-connect/bot-docs/blob/main/docs/develop/api-v2/server-inter/message/send-receive/send.md)目前明确写明主动推送已停止提供。因此默认官方适配器保留作为计划要求的实现，实际满足独立长期主动通知很可能需要备用 OneBot 路线；两条路线都未做真实账号验收。
 
@@ -123,6 +123,6 @@ npm.cmd test
 
 GitHub Actions 配置包含 Windows 和 Ubuntu 22.04 两个平台。集成测试使用真实固定版本 Harness，并用本地 HTTP/SSE、WebSocket 模拟模型与 QQ 端点，不需要生产密钥、不向真实账号发送消息。
 
-创建自己的 GitHub 私有仓库后提交源码及锁文件即可。`.env`、`config.local.json`、数据库、会话、依赖和缓存均已加入 `.gitignore`；不要把真实凭据填入示例文件。配置仓库访问权限后，服务器可 `git pull --ff-only`，再按指定标签或提交执行更新脚本。
+源码及锁文件通过 GitHub 管理。`.env`、`config.local.json`、数据库、会话、依赖和缓存均已加入 `.gitignore`；真实凭据只保存在运行环境。服务器可 `git pull --ff-only`，再按指定标签或提交执行更新脚本；执行前请阅读当前 QQ 重新登录的实机限制。
 
 上游参考：[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)、[腾讯 QQ SDK](https://www.npmjs.com/package/@tencent-connect/qqbot-nodejs)、[NapCat Shell 官方文档](https://napneko.github.io/guide/boot/Shell)。

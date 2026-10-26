@@ -30,7 +30,7 @@ resolve_commit() {
 }
 download() { curl --fail --location --show-error --silent --retry 3 --connect-timeout 20 --max-time 1800 --proto '=https' --proto-redir '=https' "$1" -o "$2"; }
 install_node() {
-  if [[ -x $APP/node/bin/node && $($APP/node/bin/node --version) == v$NODE_VERSION ]]; then return; fi
+  if [[ -x $APP/node/bin/node && $($APP/node/bin/node --version) == v$NODE_VERSION ]]; then chmod 755 "$APP/node"; return; fi
   install -d -m 755 "$APP/downloads"
   local file="node-v$NODE_VERSION-linux-x64.tar.xz" staging
   download "https://nodejs.org/dist/v$NODE_VERSION/SHASUMS256.txt" "$APP/downloads/node-checksums.txt"
@@ -39,6 +39,7 @@ install_node() {
   staging=$(mktemp -d "$APP/node-new.XXXXXX")
   tar -xJf "$APP/downloads/$file" -C "$staging" --strip-components=1
   [[ $($staging/bin/node --version) == v$NODE_VERSION ]]
+  chmod 755 "$staging"
   if [[ -e $APP/node ]]; then mv -- "$APP/node" "$APP/node-before-$(date -u +%Y%m%dT%H%M%S)"; fi
   mv -- "$staging" "$APP/node"
 }

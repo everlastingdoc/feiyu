@@ -58,11 +58,27 @@ export function resourceReport(store: Store) {
   const spanHours = samples.length > 1 ? (samples.at(-1)!.at - samples[0]!.at) / 3_600_000 : 0;
   const maxGap = samples.reduce((max, s, i) => Math.max(max, i ? s.at - samples[i-1]!.at : 0), 0);
   const known = samples.length > 1 && samples.every(s => s.platform === 'linux' && s.cgroupScope === 'feiyu.slice' && s.availableMiB !== undefined && s.cgroupMiB !== undefined && s.oomKills !== undefined && s.swapIn !== undefined && s.swapOut !== undefined);
-  const swappingIntervals = samples.filter((s, i) => i && ((s.swapIn ?? 0) > (samples[i-1]!.swapIn ?? 0) || (s.swapOut ?? 0) > (samples[i-1]!.swapOut ?? 0))).length;
-  const violation = available.some(n => n < 150) || [...peaks, ...current].some(n => n > 750) || samples.some(s => (s.oomKills ?? 0) > 0) || swappingIntervals > 2;
+  // Counters are system-wide pages: occasional faults of old swapped pages are not
+  // sustained swapping. Require consecutive, materially active intervals instead
+  // of adding isolated events across the entire seven-day history.
+  const swapRateThresholdPagesPerSecond = 16;
+  const sustainedSwapThresholdSeconds = 90;
+  let swappingIntervals = 0, maxSwapPagesPerSecond = 0, consecutiveHighSwapSeconds = 0, longestHighSwapSeconds = 0;
+  for (let i = 1; i < samples.length; i++) {
+    const s = samples[i]!, previous = samples[i - 1]!;
+    const seconds = (s.at - previous.at) / 1000;
+    if (seconds <= 0 || seconds > 120 || s.swapIn === undefined || s.swapOut === undefined || previous.swapIn === undefined || previous.swapOut === undefined || s.swapIn < previous.swapIn || s.swapOut < previous.swapOut) { consecutiveHighSwapSeconds = 0; continue; }
+    const pages = s.swapIn - previous.swapIn + s.swapOut - previous.swapOut;
+    if (pages > 0) swappingIntervals++;
+    const rate = pages / seconds;
+    maxSwapPagesPerSecond = Math.max(maxSwapPagesPerSecond, rate);
+    consecutiveHighSwapSeconds = rate >= swapRateThresholdPagesPerSecond ? consecutiveHighSwapSeconds + seconds : 0;
+    longestHighSwapSeconds = Math.max(longestHighSwapSeconds, consecutiveHighSwapSeconds);
+  }
+  const violation = available.some(n => n < 150) || [...peaks, ...current].some(n => n > 750) || samples.some(s => (s.oomKills ?? 0) > 0) || longestHighSwapSeconds >= sustainedSwapThresholdSeconds;
   return { status: violation ? '未通过' : !known || spanHours < 72 || maxGap > 120_000 ? '待验收' : '通过采样验收',
     sampleCount: samples.length, spanHours, minAvailableMiB: available.length ? Math.min(...available) : null,
     maxObservedCgroupMiB: current.length ? Math.max(...current) : null, kernelPeakMiB: peaks.length ? Math.max(...peaks) : null,
-    maxGapSeconds: maxGap / 1000, swappingIntervals,
-    note: '采样结果不等于容量保证。Ubuntu旧内核没有memory.peak时，需结合750MiB的slice硬限制及完整OOM/重启日志核查。' };
+    maxGapSeconds: maxGap / 1000, swappingIntervals, maxSwapPagesPerSecond, longestHighSwapSeconds, swapRateThresholdPagesPerSecond, sustainedSwapThresholdSeconds,
+    note: '采样结果不等于容量保证。换页告警采用连续90秒达到16页/秒（x86_64通常约64KiB/秒），需结合vmstat及OOM/重启日志核查；零星换入保留计数但不累计判失败。旧内核无memory.peak时结合slice硬限制人工核查。' };
 }

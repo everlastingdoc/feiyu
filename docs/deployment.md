@@ -12,6 +12,7 @@
 | `/var/lib/feiyu` | SQLite、Harness 会话、运行锁、资源采样 |
 | `/etc/feiyu/config.json` | 非密钥配置，服务用户可读，CLI 可修改 |
 | `/etc/feiyu/assistant.env` | API Key、QQ 凭据，`feiyu:feiyu`、0600 |
+| `/etc/feiyu/napcat.env` | 备用通道的快速登录账号，安装器生成，0600 |
 | `/var/backups/feiyu` | 一致性备份及对应代码提交 |
 | `/var/lib/feiyu-napcat` | 仅备用通道：QQ 登录态、NapCat 配置与运行数据 |
 
@@ -24,12 +25,12 @@
 ```bash
 sudo apt-get update
 sudo apt-get install -y git
-git clone git@github.com:YOUR_ACCOUNT/feiyu.git ~/feiyu
+git clone https://github.com/everlastingdoc/feiyu.git ~/feiyu
 cd ~/feiyu
 sudo bash scripts/install.sh HEAD
 ```
 
-替换仓库地址。脚本仅部署已提交的 Git 版本，拒绝有已跟踪文件修改的工作区；未提交文件不会进入 release。安装下载固定 Node 包并校验官方 SHASUMS，按锁文件执行 `npm ci --ignore-scripts`、构建和裁剪开发依赖，安装 systemd 单元。初装不会在空凭据状态启动服务。
+脚本仅部署已提交的 Git 版本，拒绝有已跟踪文件修改的工作区；未提交文件不会进入 release。安装下载固定 Node 包并校验官方 SHASUMS，按锁文件执行 `npm ci --ignore-scripts`、构建和裁剪开发依赖，安装 systemd 单元。初装不会在空凭据状态启动服务。
 
 填写配置：
 
@@ -119,7 +120,7 @@ sudo bash scripts/setup-napcat.sh 机器人QQ号
 sudo systemctl start feiyu-napcat
 ```
 
-安装器固定下载 NapCat Shell v4.18.41 并验证 GitHub release 提供的 SHA256，加载器固定到已记录的 Git 提交和 SHA256。使用腾讯端固定 Linux QQ `3.2.34-53644` 安装包，检查架构和包版本并记录下载摘要；腾讯该下载端未提供可独立核验的签名摘要，包来源校验依赖 HTTPS。安装不会执行随时变化的远程 shell 脚本。QQ/NapCat 在当前环境没有实际启动过，这条路线仍待服务器验证。
+安装器固定下载 NapCat Shell v4.18.41 并验证 GitHub release 提供的 SHA256，加载器固定到已记录的 Git 提交和 SHA256。使用腾讯端固定 Linux QQ `3.2.34-53644` 安装包，检查架构和包版本并记录下载摘要；腾讯该下载端未提供可独立核验的签名摘要，包来源校验依赖 HTTPS。安装不会执行随时变化的远程 shell 脚本。该组合已在 Ubuntu 实机启动并确认收到即时主动通知；长期可达性及 QQ 重启后的免扫码恢复仍按下述状态验收。
 
 从本地建立 SSH 转发：
 
@@ -138,6 +139,8 @@ sudo feiyu health --require-connected
 sudo feiyu pair
 sudo ss -lntp '( sport = :3001 or sport = :6099 )'
 ```
+
+NapCat 服务通过 `napcat.env` 中的 `FEIYU_QQ_ACCOUNT` 向启动器显式传入 `-q`，以尝试使用保存的登录态；启动参数不能保证平台接受已有登录态。**2026-10-26 实机测试中，QQ 重启后仍返回“登录态已失效，请重新登录”，需要重新扫码。** 因此目前只确认飞鱼进程自身可以重启恢复，QQ 组件整套重启后的免扫码恢复尚未通过。安装、备份或更新若停止了 QQ 组件，请准备重新扫码，不能把它当作已验证的无人值守恢复能力。
 
 在普通 QQ 账号私聊完成重新配对。两个通道的用户标识不同，所以配对不跨通道猜测映射；长期记忆共用，旧通道排队通知不自动迁移，需要核查并在新通道重新创建。仅一个配置中的通道会运行。
 

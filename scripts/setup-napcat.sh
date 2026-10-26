@@ -30,6 +30,8 @@ unzip -q "$APP/downloads/NapCat.Shell-v4.18.41.zip" -d /var/lib/feiyu-napcat/nap
 chown -R feiyu:feiyu /var/lib/feiyu-napcat
 chmod -R go-rwx /var/lib/feiyu-napcat
 run_cli napcat-config --account "$ACCOUNT" --output /var/lib/feiyu-napcat/napcat/config
+printf 'FEIYU_QQ_ACCOUNT=%s\n' "$ACCOUNT" > "$CONFIG/napcat.env"
+chmod 600 "$CONFIG/napcat.env"
 install -m 644 "$APP/current/deploy/feiyu-napcat.service" /etc/systemd/system/feiyu-napcat.service
 systemctl daemon-reload
 systemctl enable feiyu-napcat.service

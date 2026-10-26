@@ -13,7 +13,8 @@ Slice=feiyu.slice
 WorkingDirectory=/var/lib/feiyu-napcat
 Environment=HOME=/var/lib/feiyu-napcat
 Environment=NAPCAT_BOOTMAIN=/var/lib/feiyu-napcat
-ExecStart=/usr/bin/xvfb-run -a /usr/bin/env LD_PRELOAD=/opt/feiyu/napcat/libnapcat_launcher.so /opt/QQ/qq --no-sandbox
+EnvironmentFile=/etc/feiyu/napcat.env
+ExecStart=/usr/bin/xvfb-run -a /usr/bin/env LD_PRELOAD=/opt/feiyu/napcat/libnapcat_launcher.so /opt/QQ/qq --no-sandbox -q ${FEIYU_QQ_ACCOUNT}
 Restart=on-failure
 RestartSec=15
 TimeoutStopSec=45
